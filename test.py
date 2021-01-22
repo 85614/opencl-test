@@ -1,20 +1,21 @@
+from mxnet import nd
 
 # Zoom out data two times
 
-data = array([[[[1, 4, 3, 6],
+data = nd.array([[[[1, 4, 3, 6],
             [1, 8, 8, 9],
             [0, 4, 1, 5],
             [1, 0, 1, 3]]]])
 
-affine_matrix = array([[2, 0, 0],
+affine_matrix = nd.array([[2, 0, 0],
   [0, 2, 0]])
 
-affine_matrix = reshape(affine_matrix, shape=(1, 6))
+affine_matrix = nd.reshape(affine_matrix, shape=(1, 6))
 
-grid = GridGenerator(data=affine_matrix,
+grid = nd.GridGenerator(data=affine_matrix,
 transform_type='affine', target_shape=(4, 4))
 
-out = BilinearSampler(data, grid)
+out = nd.BilinearSampler(data, grid)
 
 print("out:\n", out)
 print("excepted:",
@@ -25,12 +26,12 @@ print("excepted:",
 
 
 
-data= array([[[[1, 4, 3, 6],
+data= nd.array([[[[1, 4, 3, 6],
   [1, 8, 8, 9],
   [0, 4, 1, 5],
   [1, 0, 1, 3]]]])
 
-warp_maxtrix= array([[[[1, 1, 1, 1],
+warp_matrix= nd.array([[[[1, 1, 1, 1],
   [1, 1, 1, 1],
   [1, 1, 1, 1],
   [1, 1, 1, 1]],
@@ -39,8 +40,8 @@ warp_maxtrix= array([[[[1, 1, 1, 1],
   [0, 0, 0, 0],
   [0, 0, 0, 0]]]])
 
-grid= GridGenerator(data=warp_matrix, transform_type='warp')
-out= BilinearSampler(data, grid)
+grid= nd.GridGenerator(data=warp_matrix, transform_type='warp')
+out= nd.BilinearSampler(data, grid)
 
 print("out:\n", out)
 print("excepted:",
