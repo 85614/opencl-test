@@ -1,0 +1,1 @@
+python ~/mxnet_project/example/testexample/test2.py
