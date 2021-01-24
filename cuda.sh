@@ -1,0 +1,1 @@
+cp ~/record/cuda-Makefile ~/mxnet_opencl/Makefile

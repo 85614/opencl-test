@@ -1,0 +1,1 @@
+cp ~/record/opencl-Makeflie ~/mxnet_opencl/Makefile

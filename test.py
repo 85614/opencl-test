@@ -16,7 +16,8 @@ grid = nd.GridGenerator(data=affine_matrix,
 transform_type='affine', target_shape=(4, 4))
 
 out = nd.BilinearSampler(data, grid)
-
+print("data:\n", data)
+print("grid:\n", grid)
 print("out:\n", out)
 print("excepted:",
   [[[[0,   0,     0,   0],
@@ -42,7 +43,8 @@ warp_matrix= nd.array([[[[1, 1, 1, 1],
 
 grid= nd.GridGenerator(data=warp_matrix, transform_type='warp')
 out= nd.BilinearSampler(data, grid)
-
+print("data:\n", data)
+print("grid:\n", grid)
 print("out:\n", out)
 print("excepted:",
   [[[[4,  3,  6,  0],
