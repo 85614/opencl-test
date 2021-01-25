@@ -40,21 +40,3 @@ out= nd.BilinearSampler(data, grid)
 print("out:\n", out)
 
 
-
-
-# v1 = [1, 2]
-# v2 = [0, 1]
-# a = mx.sym.Variable('a')
-# b = mx.sym.Variable('b')
-# b_stop_grad = mx.ndarray.op.stop_gradient(3 * b)
-# loss = mx.ndarray.op.MakeLoss(b_stop_grad + a)
-
-# executor = loss.simple_bind(ctx=cpu(), a=(1,2), b=(1,2))
-# executor.forward(is_train=True, a=v1, b=v2)
-# executor.outputs
-# [ 1.  5.]
-
-# executor.backward()
-# executor.grad_arrays
-# [ 0.  0.]
-# [ 1.  1.]
