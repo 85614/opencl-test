@@ -1,12 +1,23 @@
 import mxnet as mx
 import numpy as np
-from mxnet import nd
 from mxnet.test_utils import check_consistency, set_default_context, assert_almost_equal, assert_allclose
 
 def default_context():
     return mx.cpu()
 
 def test_bilinear_sampler_with_type():
+    data = mx.sym.Variable('data')
+    grid = mx.sym.Variable('grid')
+    sym = mx.sym.BilinearSampler(data=data, grid=grid)
+    ctx_list = [{'ctx': mx.cpu(0), 'data': (1, 5, 10, 10), 'grid': (1, 2, 10, 10),
+                  'type_dict': {'data': np.float64}},
+                {'ctx': mx.cpu(0), 'data': (1, 5, 10, 10), 'grid': (1, 2, 10, 10),
+                  'type_dict': {'data': np.float32}}]
+    check_consistency(sym, ctx_list)
+    # check_consistency(sym, ctx_list, grad_req="add")
+
+
+def test_bilinear_sampler_with_type0():
     data = mx.sym.Variable('data')
     grid = mx.sym.Variable('grid')
     sym = mx.sym.BilinearSampler(data=data, grid=grid)
@@ -92,49 +103,5 @@ def test_bilinear_sampler_versions():
                     assert_almost_equal(exe.grad_dict['grid'], exe_list[ref_idx].grad_dict['grid'], rtol=1e-3, atol=1e-5)
 
 
-
-def test_correct1():
-    data = nd.array([[[[1, 4, 3, 6],
-                [1, 8, 8, 9],
-                [0, 4, 1, 5],
-                [1, 0, 1, 3]]]])
-
-    affine_matrix = nd.array([[2, 0, 0],
-      [0, 2, 0]])
-
-    affine_matrix = nd.reshape(affine_matrix, shape=(1, 6))
-
-    grid = nd.GridGenerator(data=affine_matrix,
-    transform_type='affine', target_shape=(4, 4))
-
-    out = nd.BilinearSampler(data, grid)
-    print("out:\n", out)
-
-
-def test_correct2():
-    data= nd.array([[[[1, 4, 3, 6],
-      [1, 8, 8, 9],
-      [0, 4, 1, 5],
-      [1, 0, 1, 3]]]])
-
-    warp_matrix= nd.array([[[[1, 1, 1, 1],
-      [1, 1, 1, 1],
-      [1, 1, 1, 1],
-      [1, 1, 1, 1]],
-      [[0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0]]]])
-
-    grid= nd.GridGenerator(data=warp_matrix, transform_type='warp')
-
-
-    out= nd.BilinearSampler(data, grid)
-    print("out:\n", out)
-
-
-
 test_bilinear_sampler_with_type()
-test_bilinear_sampler_versions()
-test_correct1()
-test_correct2()
+# test_bilinear_sampler_versions()
