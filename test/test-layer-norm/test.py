@@ -2,7 +2,7 @@ import os
 import mxnet as mx
 import numpy as np
 from mxnet import test_utils
-from mxnet.test_utils import assert_almost_equal check_numeric_gradient
+from mxnet.test_utils import check_numeric_gradient, assert_almost_equal
 
 def default_context():
     return mx.cpu()
