@@ -1,6 +1,9 @@
 import numbers
 import sys
 import os
+import math
+import random
+import itertools
 import mxnet as mx
 import numpy as np
 from mxnet import nd
@@ -20,6 +23,59 @@ def get_tolerance(rtol, ctx):
     if 'atol_mult' in ctx:
         return ctx['atol_mult'] * rtol
     return rtol
+
+def _validate_sample_location(input_rois, input_offset, spatial_scale, pooled_w, pooled_h, sample_per_part, part_size, output_dim, num_classes, trans_std, feat_h, feat_w):
+    num_rois = input_rois.shape[0]
+    output_offset = input_offset.copy()
+    # simulate deformable psroipooling forward function
+    for roi_idx in range(num_rois):
+        sub_rois = input_rois[roi_idx, :].astype(np.float32)
+        img_idx, x0, y0, x1, y1 = int(sub_rois[0]), sub_rois[1], sub_rois[2], sub_rois[3], sub_rois[4]
+        roi_start_w = round(x0) * spatial_scale - 0.5
+        roi_start_h = round(y0) * spatial_scale - 0.5
+        roi_end_w = round(x1 + 1) * spatial_scale - 0.5
+        roi_end_h = round(y1 + 1) * spatial_scale - 0.5
+        roi_w, roi_h = roi_end_w - roi_start_w, roi_end_h - roi_start_h
+        bin_size_w, bin_size_h = roi_w / pooled_w, roi_h / pooled_h
+        sub_bin_size_w, sub_bin_size_h = bin_size_w / sample_per_part, bin_size_h / sample_per_part
+        for c_top in range(output_dim):
+            channel_each_cls = output_dim / num_classes
+            class_id = int(c_top / channel_each_cls)
+            for ph in range(pooled_h):
+                for pw in range(pooled_w):
+                    part_h = int(math.floor(float(ph) / pooled_h * part_size))
+                    part_w = int(math.floor(float(pw) / pooled_w * part_size))
+                    trans_x = input_offset[roi_idx, class_id * 2, part_h, part_w] * trans_std
+                    trans_y = input_offset[roi_idx, class_id * 2 + 1, part_h, part_w] * trans_std
+                    bin_h_start, bin_w_start = ph * bin_size_h + roi_start_h, pw * bin_size_w + roi_start_w
+
+                    need_check = True
+                    while need_check:
+                        pass_check = True
+                        for ih in range(sample_per_part):
+                            for iw in range(sample_per_part):
+                                h = bin_h_start + trans_y * roi_h + ih * sub_bin_size_h
+                                w = bin_w_start + trans_x * roi_w + iw * sub_bin_size_w
+
+                                if w < -0.5 or w > feat_w - 0.5 or h < -0.5 or h > feat_h - 0.5:
+                                    continue
+
+                                w = min(max(w, 0.1), feat_w - 1.1)
+                                h = min(max(h, 0.1), feat_h - 1.1)
+                                # if the following condiiton holds, the sampling location is not differentiable
+                                # therefore we need to re-do the sampling process
+                                if h - math.floor(h) < 1e-3 or math.ceil(h) - h < 1e-3 or w - math.floor(w) < 1e-3 or math.ceil(w) - w < 1e-3:
+                                    trans_x, trans_y = random.random() * trans_std, random.random() * trans_std
+                                    pass_check = False
+                                    break
+                            if not pass_check:
+                                break
+                        if pass_check:
+                            output_offset[roi_idx, class_id * 2 + 1, part_h, part_w] = trans_y / trans_std
+                            output_offset[roi_idx, class_id * 2, part_h, part_w] = trans_x / trans_std
+                            need_check = False
+
+    return output_offset
 
 def check_consistency(sym, ctx_list, scale=1.0, grad_req='write',
                       arg_params=None, aux_params=None, tol=None,
@@ -178,7 +234,8 @@ def my_test():
     pass
 
 if __name__ == '__main__':
-    in_mode = "rb" if os.path.exists(input_file) else "wb"
+    # in_mode = "rb" if os.path.exists(input_file) else "wb"
+    in_mode = "wb"
     out_mode = "rb" if "r" in in_mode and os.path.exists(output_file) else "wb"
     print("{} input in file '{}'".format("use old" if "r" in in_mode else "store random", input_file))
     print("{} output in file '{}'".format("compare" if "r" in out_mode else "store", output_file))
