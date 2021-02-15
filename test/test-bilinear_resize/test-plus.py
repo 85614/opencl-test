@@ -205,9 +205,76 @@ def test_bilinear_resize_op():
     print('all correct')
 
 
-def my_test():        
-    test_bilinear_resize_op()
+def test_image_resize():
+    # image = mx.nd.random.uniform(0, 255, (4, 2, 3)).astype(dtype=np.uint8)
+    image = mx.nd.array(
+        [[[139, 151, 182],
+          [215, 153, 218]],
+         [[138, 216, 108],
+          [159, 164,  98]],
+         [[111,  75, 227],
+          [14, 245,  69]],
+         [[97, 121, 201],
+          [207, 134, 122]]]).astype(dtype=np.uint8)
+    print(image)
+    print('the result:')
+    print(mx.nd.image.resize(image, (3, 3)))
+    print('''
+        excepted:
+        [[[139 151 182]
+        [177 152 200]
+        [215 153 218]]
 
+        [[124 145 167]
+        [105 175 125]
+        [ 86 204  83]]
+
+        [[ 97 121 201]
+        [152 127 161]
+        [207 134 122]]]
+<NDArray 3x3x3 @cpu(0)>
+        ''')
+    # image = mx.nd.random.uniform(0, 255, (2, 4, 2, 3)).astype(dtype=np.uint8)
+    image = mx.nd.array(
+        [[[[139, 151, 182],
+           [215, 153, 218]],
+          [[138, 216, 108],
+           [159, 164,  98]],
+          [[111,  75, 227],
+           [14, 245,  69]],
+          [[97, 121, 201],
+           [207, 134, 122]]], 
+         [[[144, 100, 236],
+           [213,  18,  86]],
+          [[22, 165,   5],
+           [93, 212, 244]],
+          [[198,  35, 221],
+           [221, 249, 120]],
+          [[203, 204, 117],
+           [132, 199, 173]]]]).astype(dtype=np.uint8)
+    print(image)
+    print('the result:')
+    print(mx.nd.image.resize(image, (2, 2)))
+    print('''
+        excepted:
+        [[[[139 151 182]
+        [215 153 218]]
+
+        [[ 97 121 201]
+        [207 134 122]]]
+
+
+        [[[144 100 236]
+        [213  18  86]]
+
+        [[203 204 117]
+        [132 199 173]]]]
+        <NDArray 2x2x2x3 @cpu(0)>
+        ''')
+def my_test():        
+    # test_image_resize()
+    test_bilinear_resize_op()
+    
 
 
 if __name__ == '__main__':
